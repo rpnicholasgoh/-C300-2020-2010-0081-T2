@@ -1,0 +1,65 @@
+﻿@model Event
+<!DOCTYPE html>
+<form>
+    <h2>Event Details</h2>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2">ID:</label>
+        <label class="control-label col-sm-5">@Model.event_id</label>
+    </div>
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Event Name:</label>
+        <label class="control-label col-sm-5">@Model.event_name</label>
+    </div>
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Description:</label>
+        <label class="control-label col-sm-5">@Model.event_description</label>
+    </div>
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Venue:</label>
+        <label class="control-label col-sm-5">@Model.venue</label>
+    </div>
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Category:</label>
+        <label class="control-label col-sm-5">@Model.category</label>
+    </div>
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Date & Time:</label>
+        <label class="control-label col-sm-5">@String.Format("{0:dd-MM-yyyy HH:mm}", Model.start_dt) to @String.Format("{0:dd-MM-yyyy HH:mm}", Model.end_dt)</label>
+    </div>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Document(s):</label>
+        <div class="col-sm-5">
+            @if (ValidUtl.CheckIfEmpty(Model.docName) == false)
+            {
+                string remainingStr = Model.docName;
+                int detectNextLine = Model.docName.IndexOf("\n");
+                int detectLastNextLine = Model.docName.LastIndexOf("\n");
+                string docs = "";
+                if (detectNextLine == -1) // 1 file
+                {
+                    <a href="~/file/@Model.docName">@Model.docName</a>
+                }// working
+                else // >2 files
+                {
+                    while (detectNextLine != -1)
+                    {
+                        docs = remainingStr.Substring(0, detectNextLine);
+                        <a href="~/file/@docs">@docs</a><text>, </text>
+                        remainingStr = remainingStr.Substring(detectNextLine + 1);
+                        detectNextLine = remainingStr.IndexOf("\n");
+                    }
+                    docs = Model.docName.Substring(detectLastNextLine + 1);
+                    <a href="~/file/@docs">@docs</a>
+                }
+            }
+            else
+            {
+                <label class="control-label col-sm-5">-</label>
+            }
+        </div>
+
+    </div>
+
+</form>
