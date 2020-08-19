@@ -1,0 +1,425 @@
+﻿@model List<Event>
+<!DOCTYPE html>
+
+
+@section MoreScripts{
+
+    <link href="~/lib/datatables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/moment/moment.min.js"></script>
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+
+    <script>
+        $(document).ready(function () {
+            $('#JSEventTable').DataTable({
+                ordering: true,
+                paging: true,
+                searching: true,
+                info: true,
+                lengthChange: true,
+                lengthMenu: [[5, 50, 75, -1], [5, 50, 75, "All"]],
+                "scrollX": true,
+                "columnDefs": [
+                    { "width": "150px", "targets": 1 },
+                    { "width": "450px", "targets": 2 },
+                    { "width": "250px", "targets": 3 },
+                    { "width": "70px", "targets": 4 },
+                    { "width": "60px", "targets": 5 },
+                    { "width": "60px", "targets": 6 },
+                    { "width": "50px", "targets": 7 },
+                    { "width": "100px", "targets": 8 },
+                    { "width": "60px", "targets": 9 },
+                    { "width": "100px", "targets": 10 },
+                ],
+                initComplete: function () {
+                    this.api().columns([4]).every(function () {
+                        var column = this;
+                        var select = $('<select><option value=""></option></select>')
+                            .appendTo('#cat')
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex(
+                                    $(this).val()
+                                );
+
+                                column
+                                    .search(val ? '^' + val + '$' : '', true, false)
+                                    .draw();
+                            });
+
+                        column.data().unique().sort().each(function (d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>')
+                        });
+                    });
+                }
+
+            });
+
+
+        });
+    </script>
+}
+
+<h2>Events</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-@TempData["MsgType"]">
+        @TempData["Message"]
+    </div>
+}
+<div class="btn-group pull-right">
+    <button id="Event1" class="btn btn-default filter" href="Event/EventList">All Events</button>
+    <button id="Event2" class="btn btn-default filter">Past Events</button>
+    <button id="Event3" class="btn btn-default filter">Ongoing Events</button>
+    <button id="Event4" class="btn btn-default filter">Upcoming Events</button>
+</div>
+<div>
+    <label>Category: </label><div id="cat"></div>
+</div>
+<script type="text/javascript">
+    
+    $('#Event1').click(function () {
+        $('#JSEventTable').DataTable()
+            .columns(9)
+            .search("")
+            .draw();
+    });
+    $('#Event2').click(function () {
+        $('#JSEventTable').DataTable()
+            .columns(9)
+            .search("Past")
+            .draw();
+    });
+    $('#Event3').click(function () {
+        $('#JSEventTable').DataTable()
+            .columns(9)
+            .search("Ongoing")
+            .draw();
+    });
+    $('#Event4').click(function () {
+        $('#JSEventTable').DataTable()
+            .columns(9)
+            .search("Upcoming")
+            .draw();
+    });
+
+</script>
+
+
+<table id="JSEventTable" class="table table-striped table-bordered">
+
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Venue</th>
+            <th scope="col">Category</th>
+            <th scope="col">Start Date/Time</th>
+            <th scope="col">End Date/Time</th>
+
+
+
+            @if (User.IsInRole("Admin"))
+            {
+                <th scope="col">Invite Startup</th>
+            }
+            else if (User.IsInRole("Current") || User.IsInRole("Alumni"))
+            {
+                <th scope="col">Startup Invited</th>
+            }
+            <th scope="col">Document</th>
+            <th scope="col">Status</th>
+            <th scope="col">Operations</th>
+
+        </tr>
+    </thead>
+    
+    <tbody>
+        @foreach (Event ev in Model)
+        {
+            if (((User.IsInRole("Current") && ev.CompanyType == 2)) || ((User.IsInRole("Current") && ev.CompanyType == 4)) || User.IsInRole("Admin"))
+            {
+                <tr>
+                    <td>
+                        @ev.event_id
+                    </td>
+                    @if (User.IsInRole("Current") || User.IsInRole("Alumni"))
+                    {
+                        /*
+                        <a asp-controller="Event"
+                           asp-action="EventDetails"
+                           asp-route-id="@ev.event_id">
+                            @ev.event_name
+                        </a>*/
+                    }
+                    else
+                    {
+                        //@ev.event_name
+                    }
+                    <td>
+                        @ev.event_name
+                    </td>
+                    <td>
+                        @ev.event_description
+                    </td>
+                    <td>
+                        @ev.venue
+                    </td>
+                    <td>
+                        @ev.category
+                    </td>
+                    <td>
+                        @String.Format("{0:dd-MM-yyyy HH:mm}", ev.start_dt)
+                    </td>
+                    <td>
+                        @String.Format("{0:dd-MM-yyyy HH:mm}", ev.end_dt)
+                    </td>
+                    <td>
+
+                        @if (ev.CompanyType == 2)
+                        {
+                            <text>Current</text>
+                        }
+                        else if (ev.CompanyType == 3)
+                        {
+                            <text>Alumni</text>
+                        }
+                        else if (ev.CompanyType == 4)
+                        {
+                            <text>Current, Alumni</text>
+                        }
+
+                    </td>
+                    <td>
+                        @if (ev.docName == null)
+                        {
+                            <text>-</text>
+                        }
+                        else
+                        {
+                            @ev.docName
+                        }
+                    </td>
+                    <td>
+                        @if (ev.status == "Upcoming")
+                        {
+                            DateTime now = DateTime.Now;
+                            DateTime end = Convert.ToDateTime(ev.end_dt);
+                            DateTime start = Convert.ToDateTime(ev.start_dt);
+                            int res1 = DateTime.Compare(now, end);
+                            int res2 = DateTime.Compare(now, start);
+                            if (res1 > 0)
+                            {
+                                string update =
+                                   @"UPDATE Events
+                                        SET status ='{1}'
+                                      WHERE event_id='{0}'";
+                                DBUtl.ExecSQL(update, ev.event_id, "Past");
+                            }
+                            if (res2 >= 0 && res1 <= 0)
+                            {
+                                string update =
+                                   @"UPDATE Events
+                                        SET status ='{1}'
+                                      WHERE event_id='{0}'";
+                                DBUtl.ExecSQL(update, ev.event_id, "Ongoing");
+                            }
+                        }
+                        else if (ev.status == "Ongoing")
+                        {
+                            DateTime now = DateTime.Now;
+                            DateTime end = Convert.ToDateTime(ev.end_dt);
+                            DateTime start = Convert.ToDateTime(ev.start_dt);
+                            int res1 = DateTime.Compare(now, end);
+                            if (res1 > 0)
+                            {
+                                string update =
+                                   @"UPDATE Events
+                                        SET status ='{1}'
+                                      WHERE event_id='{0}'";
+                                DBUtl.ExecSQL(update, ev.event_id, "Past");
+                            }
+                        }
+                        @ev.status
+                    </td>
+
+                    <td>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            @if (ev.status == "Upcoming")
+                            {
+
+                                <a asp-controller="Event"
+                                   asp-action="EditEvent"
+                                   asp-route-id="@ev.event_id">
+                                    Edit
+                                </a>
+                                <a> |</a>
+                            }
+
+                            <a asp-controller="Event"
+                               asp-action="DeleteEvent"
+                               asp-route-id="@ev.event_id"
+                               onclick="return confirm('Are you sure you want to delete: @ev.event_name?')">
+                                Delete
+                            </a>
+                            <a> |</a>
+
+                            @if (ev.status == "Past")
+                            {
+
+                                <a asp-controller="Home"
+                                   asp-action="Send"
+                                   asp-route-id="@ev.event_id">
+                                    Feedback
+                                </a>
+                                <a> |</a>
+                            }
+                        }
+                        <a asp-controller="Event"
+                           asp-action="EventDetails"
+                           asp-route-id="@ev.event_id">
+                            Details
+                        </a>
+                    </td>
+
+                </tr>
+            }
+            else if (((User.IsInRole("Alumni") && ev.CompanyType == 3)) || ((User.IsInRole("Alumni") && ev.CompanyType == 4)))
+            {
+                <tr>
+                    <td>
+                        @ev.event_id
+                    </td>
+                    @if (User.IsInRole("Current") || User.IsInRole("Alumni"))
+                    {
+                        /*
+                        <a asp-controller="Event"
+                           asp-action="EventDetails"
+                           asp-route-id="@ev.event_id">
+                            @ev.event_name
+                        </a>*/
+                    }
+                    else
+                    {
+                        //@ev.event_name
+                    }
+                    <td>
+                        @ev.event_name
+                    </td>
+                    <td>
+                        @ev.event_description
+                    </td>
+                    <td>
+                        @ev.venue
+                    </td>
+                    <td>
+                        @ev.category
+                    </td>
+                    <td>
+                        @String.Format("{0:dd-MM-yyyy HH:mm}", ev.start_dt)
+                    </td>
+                    <td>
+                        @String.Format("{0:dd-MM-yyyy HH:mm}", ev.end_dt)
+                    </td>
+                    <td>
+
+                        @if (ev.CompanyType == 2)
+                        {
+                            <text>Current</text>
+                        }
+                        else if (ev.CompanyType == 3)
+                        {
+                            <text>Alumni</text>
+                        }
+                        else if (ev.CompanyType == 4)
+                        {
+                            <text>Current, Alumni</text>
+                        }
+
+                    </td>
+                    <td>
+                        @if (ev.docName == null)
+                        {
+                            <text>-</text>
+                        }
+                        else
+                        {
+                            @ev.docName
+                        }
+
+
+                    </td>
+                    <td>
+                        @if (ev.status == "Upcoming")
+                        {
+                            DateTime now = DateTime.Now;
+                            DateTime end = Convert.ToDateTime(ev.end_dt);
+                            DateTime start = Convert.ToDateTime(ev.start_dt);
+                            int res1 = DateTime.Compare(now, end);
+                            int res2 = DateTime.Compare(now, start);
+                            if (res1 > 0)
+                            {
+                                string update =
+                                   @"UPDATE Events
+                                        SET status ='{1}'
+                                      WHERE event_id='{0}'";
+                                DBUtl.ExecSQL(update, ev.event_id, "Past");
+                            }
+                            if (res2 >= 0 && res1 <= 0)
+                            {
+                                string update =
+                                   @"UPDATE Events
+                                        SET status ='{1}'
+                                      WHERE event_id='{0}'";
+                                DBUtl.ExecSQL(update, ev.event_id, "Ongoing");
+                            }
+                        }
+                        else if (ev.status == "Ongoing")
+                        {
+                            DateTime now = DateTime.Now;
+                            DateTime end = Convert.ToDateTime(ev.end_dt);
+                            DateTime start = Convert.ToDateTime(ev.start_dt);
+                            int res1 = DateTime.Compare(now, end);
+                            if (res1 > 0)
+                            {
+                                string update =
+                                   @"UPDATE Events
+                                        SET status ='{1}'
+                                      WHERE event_id='{0}'";
+                                DBUtl.ExecSQL(update, ev.event_id, "Past");
+                            }
+                        }
+                        @ev.status
+                    </td>
+
+                    <td>
+                        <a asp-controller="Event"
+                           asp-action="EventDetails"
+                           asp-route-id="@ev.event_id">
+                            Details
+                        </a>|
+                        <a asp-controller="Home"
+                           asp-action="FeedbackForm"
+                           asp-route-id="@ev.event_id">
+                            FeedbackForm
+                        </a>|
+                    </td>
+
+                </tr>
+            }
+        }
+    </tbody>
+
+</table>
+
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>EventList</title>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,357 @@
+﻿@model Event;
+
+
+@section MoreScripts {
+    <script src="~/lib/moment/moment.min.js"></script>
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/dtpicker/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+    <script src="~/lib/dtpicker/js/tempusdominus-bootstrap-4.min.js"></script>
+
+
+
+    <script language="javascript">
+        $(document).ready(function () {
+            $('#JSStartDT')
+                .datetimepicker({
+                    format: 'DD-MM-YYYY HH:mm',
+                    sideBySide: true,
+                    minDate: new Date()
+                });
+            $('#JSEndDT')
+                .datetimepicker({
+                    format: 'DD-MM-YYYY HH:mm',
+                    sideBySide: true,
+                    minDate: new Date()
+                });
+        });
+    </script>
+    <script>
+        function removeElement(elementId) {
+            // Removes an element from the document
+            var element = document.getElementById(elementId);
+            element.parentNode.removeChild(element);
+        }
+    </script>
+
+}
+
+<form asp-controller="Event" asp-action="EditEvent"
+      method="post" enctype="multipart/form-data">
+    <div class="form-group row">
+        <div class="offset-sm-0 col-sm-6 ">
+            <h2>Edit Event</h2>
+        </div>
+    </div>
+
+    <input asp-for="event_id" hidden />
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2" asp-for="event_name">Name of Event :</label>
+        <div class="col-sm-5">
+            <input asp-for="event_name" class="form-control" />
+        </div>
+        <div class="col-sm-4">
+            <span asp-validation-for="event_name" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2" asp-for="event_description">Description :</label>
+        <div class="col-sm-5">
+            <textarea asp-for="event_description" rows="8" cols="20" maxlength="455" class="form-control"></textarea>
+        </div>
+        <div class="col-sm-4">
+            <span asp-validation-for="event_description" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2" asp-for="venue">Venue :</label>
+        <div class="col-sm-5">
+            <input asp-for="venue" class="form-control" />
+        </div>
+        <div class="col-sm-4">
+            <span asp-validation-for="venue" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2" asp-for="category">Category:</label>
+        <div class="col-sm-4">
+            <select asp-for="category" class="form-control">
+                <option value="">--- Select One ---</option>
+                @if (Model.category == "Masterclass")
+                {
+                    <option value="Masterclass" selected>Masterclass</option>
+                }
+                else
+                {
+                    <option value="Masterclass">Masterclass</option>
+                }
+                @if (Model.category == "Networking")
+                {
+                    <option value="Networking" selected>Networking</option>
+                }
+                else
+                {
+                    <option value="Networking">Networking</option>
+                }
+                @if (Model.category == "Panels/Fireside Chat")
+                {
+                    <option value="Panels/Fireside Chat" selected>Panels/Fireside Chat</option>
+                }
+                else
+                {
+                    <option value="Panels/Fireside Chat">Panels/Fireside Chat</option>
+                }
+                @if (Model.category == "Consultations")
+                {
+                    <option value="Consultations" selected>Consultations</option>
+                }
+                else
+                {
+                    <option value="Consultations">Consultations</option>
+                }
+            </select>
+        </div>
+        <div>
+            <span asp-validation-for="category" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Date & Time:</label>
+        <div class="col-sm-3">
+            <div class="input-group date" id="JSStartDT" data-target-input="nearest">
+                <input type="text" class="form-control"
+                       asp-for="start_dt"
+                       asp-format="{0:dd-MM-yyyy HH:mm}" />
+                <div class="input-group-append" data-target="#JSStartDT" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+        </div>
+        to
+        <div class="col-sm-3">
+            <div class="input-group date" id="JSEndDT" data-target-input="nearest">
+                <input type="text" class="form-control"
+                       asp-for="end_dt"
+                       asp-format="{0:dd-MM-yyyy HH:mm}" />
+                <div class="input-group-append" data-target="#JSEndDT" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <span asp-validation-for="start_dt" class="text-danger"></span>
+            <div>
+                <span asp-validation-for="end_dt" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Repeat Event:</label>
+        <div class="col-sm-3">
+            <select asp-for="repeat" id="toRepeat" class="form-control">
+                @if (Model.repeatOnNo == 0)
+                {
+                    <option value="No" selected>No</option>
+                    <option value="Yes">Yes</option>
+
+                }
+                else
+                {
+                    <option value="No">No</option>
+                    <option value="Yes" selected>Yes</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <script>
+        $("#toRepeat").change(function () {
+            if ($(this).val() == "No") {
+                $('#repeat1Div').hide();
+                $('#repeat1').removeAttr('required');
+                $('#repeat1').removeAttr('data-error');
+                $('#repeat2Div').hide();
+                $('#repeat2').removeAttr('required');
+                $('#repeat2').removeAttr('data-error');
+                $('#repeat3Div').hide();
+                $('#repeat3').removeAttr('required');
+                $('#repeat3').removeAttr('data-error');
+
+            } else {
+                $('#repeat1Div').show();
+                $("#repeat1").attr('required', '');
+                $("#repeat1").attr('data-error', 'This field is required.');
+                $("#elementId").attr('required', '');
+                $('#repeat2Div').show();
+                $('#repeat2').attr('required', true);
+                $('#repeat2').attr('data-error', 'This field is required.');
+                $('#repeat3Div').show();
+                $('#repeat3').attr('required', '');
+                $('#repeat3').attr('data-error', 'This field is required.');
+            }
+
+        });
+        $("#toRepeat").trigger("change");
+    </script>
+
+
+    <div class="form-group row" id="repeat1Div">
+        <label class="control-label col-sm-2">Repeat every:</label>
+        <div class="col-sm-1" id="repeat1" >
+            @if (Model.repeatOnNo == 0)
+            {
+                <input id="repeat1" class="form-control" type="number" asp-for="repeatOnNo" min="1" value="1"/>
+            }
+            else
+            {
+                <input id="repeat1" class="form-control" type="number" asp-for="repeatOnNo" min="1" />
+            }
+        </div>
+        <div class="col-sm-2">
+            <select class="form-control" asp-for="repeatOnType">
+                <option value="day">Day</option>
+                <option value="week">Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <span asp-validation-for="repeatOnNo" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row" id="repeat3Div">
+        <label class="control-label col-sm-2" asp-for="occurence">No. of occurence:</label>
+        <div class="col-sm-1" id="repeat2">
+            @if (Model.occurence == 0)
+            {
+                <input id="repeat3" asp-for="occurence" class="form-control" type="number" min="2" value="2" />
+            }
+            else
+            {
+                <input id="repeat3" asp-for="occurence" class="form-control" type="number" min="2" />
+            }
+        </div>
+        <div class="col-sm-4">
+            <span asp-validation-for="occurence" class="text-danger"></span>
+        </div>
+    </div>
+
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2" asp-for="CompanyType">Invite Startup:</label>
+        <div class="col-sm-4">
+            <select asp-for="CompanyType" class="form-control">
+                @if (Model.CompanyType == 2)
+                {
+                    <option value=2 selected>Current</option>
+                }
+                else
+                {
+                    <option value=2>Current</option>
+                }
+                @if (Model.CompanyType == 3)
+                {
+                    <option value=3 selected>Alumni</option>
+                }
+                else
+                {
+                    <option value=3>Alumni</option>
+                }
+                @if (Model.CompanyType == 4)
+                {
+                    <option value=4 selected>Both</option>
+                }
+                else
+                {
+                    <option value="Current, Alumni">Both</option>
+                }
+            </select>
+        </div>
+        <div>
+            <span asp-validation-for="CompanyType" class="text-danger"></span>
+        </div>
+    </div>
+
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2" asp-for="document">Upload file:</label>
+        <div class="col-sm-4">
+            <input asp-for="@Model.document" type="file" multiple>
+        </div>
+        <label style="color:red;" class="col-sm-3">Existing file will be replaced</label>
+    </div>
+
+    <div class="form-group row">
+        <label class="control-label col-sm-2">Existing file(s):</label>
+        <div class="col-sm-5">
+            @if (ValidUtl.CheckIfEmpty(Model.docName) == false)
+            {
+                string remainingStr = Model.docName;
+                int detectNextLine = Model.docName.IndexOf("\n");
+                int detectLastNextLine = Model.docName.LastIndexOf("\n");
+                string docs = "";
+                if (detectNextLine == -1) // 1 file
+                {
+                    <a href="~/file/@Model.docName">@Model.docName</a>
+                }// working
+                else // >2 files
+                {
+                    while (detectNextLine != -1)
+                    {
+                        docs = remainingStr.Substring(0, detectNextLine);
+                        <a href="~/file/@docs">@docs</a><text>, </text>
+                        remainingStr = remainingStr.Substring(detectNextLine + 1);
+                        detectNextLine = remainingStr.IndexOf("\n");
+                    }
+                    docs = Model.docName.Substring(detectLastNextLine + 1);
+                    <a href="~/file/@docs">@docs</a>
+                }
+            }
+            else
+            {
+                <label class="control-label col-sm-5">-</label>
+            }
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="offset-sm-2 col-sm-6">
+            <input type="submit" value="Submit" class="btn btn-primary" />
+        </div>
+    </div>
+
+
+
+
+
+
+    @if (ViewData["Message"] != null)
+    {
+        <div class="form-group row">
+            <div class="offset-sm-2 col-sm-6">
+                <div class="alert alert-@ViewData["MsgType"]">
+                    <text>@Html.Raw(ViewData["Message"])</text>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    @if (ViewData["Message"] != null)
+    {
+        <div class="form-group row">
+            <div class="offset-sm-2 col-sm-6">
+                <div class="alert alert-@ViewData["MsgType"]">
+                    <text>@Html.Raw(ViewData["Message"])</text>
+                </div>
+            </div>
+        </div>
+    }
+
+</form>

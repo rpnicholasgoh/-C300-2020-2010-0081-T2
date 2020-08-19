@@ -1,0 +1,179 @@
+﻿@model List<Company>
+
+@section MoreScripts {
+    <link href="~/lib/datatables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#jsCompanyTable').DataTable({
+                ordering: true,
+                paging: true,
+                searching: true,
+                info: true,
+                lengthChange: true,
+                lengthMenu: [[5, 10, 20, -1], [6, 10, 20, "All"]],
+
+            });
+        });
+    </script>
+
+}
+
+<h1>Company List</h1>
+
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-@TempData["MsgType"]">
+        @TempData["Message"]
+    </div>
+}
+
+<table id="jsCompanyTable" class="table">
+    <thead>
+        <tr>
+            @*<th scope="col">Name</th>
+                <th scope="col">Industry</th>
+                <th scope="col">Website</th>
+                <th scope="col">Type</th>
+                @{
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <th scope="col">Size</th>
+                        <th scope="col">UserName</th>
+                        <th scope="col">Representative</th>
+                        <th scope="col">Contact</th>
+                        <th scope="col">Email</th>
+
+                    }
+                }*@
+
+            @if (User.IsInRole("Admin"))
+            {
+                <th scope="col">Name</th>
+                <th scope="col">Industry</th>
+                <th scope="col">Website</th>
+                <th scope="col">Type</th>
+                <th scope="col">Size</th>
+                <th scope="col">UserName</th>
+                <th scope="col">Representative</th>
+                <th scope="col">Contact</th>
+                <th scope="col">Email</th>
+            }
+
+            else
+            {
+                <th scope="col">Name</th>
+                <th scope="col">Industry</th>
+                <th scope="col">Website</th>
+                <th scope="col">Type</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var company in Model)
+        {
+            <tr>
+                @if (User.IsInRole("Admin"))
+                {
+                    <td>@company.CompanyName</td>
+                    <td>@company.CompanyIndustry</td>
+                    <td>@company.CompanyWebsite</td>
+                    <td>
+                        @if (company.CompanyType == 1)
+                        {
+                            <text>Admin</text>
+                        }
+                        else if (company.CompanyType == 2)
+                        {
+                            <text>Current</text>
+                        }
+                        else if (company.CompanyType == 3)
+                        {
+                            <text>Alumni</text>
+                        }
+                    </td>
+                    <td>@company.CompanySize</td>
+                    <td>@company.UserName</td>
+                    <td>@company.RepName</td>
+                    <td>@company.Contact_Num</td>
+                    <td>@company.Email</td>
+                }
+
+                else
+                {
+                    <td>@company.CompanyName</td>
+                    <td>@company.CompanyIndustry</td>
+                    <td>@company.CompanyWebsite</td>
+                    <td>
+                        @if (company.CompanyType == 1)
+                        {
+                            <text>Admin</text>
+                        }
+                        else if (company.CompanyType == 2)
+                        {
+                            <text>Current</text>
+                        }
+                        else if (company.CompanyType == 3)
+                        {
+                            <text>Alumni</text>
+                        }
+                    </td>
+                }
+                @*<td>@company.CompanyName</td>
+                    <td>@company.CompanyIndustry</td>
+                    <td>@company.CompanyWebsite</td>
+                    <td>
+                        @if (company.CompanyType == 1)
+                        {
+                            <text>Admin</text>
+                        }
+                        else if (company.CompanyType == 2)
+                        {
+                            <text>Current</text>
+                        }
+                        else if (company.CompanyType == 3)
+                        {
+                            <text>Alumni</text>
+                        }
+                    </td>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <td>@company.CompanySize</td>
+                        <td>@company.UserName</td>
+                        <td>@company.RepName</td>
+                        <td>@company.Contact_Num</td>
+                        <td>@company.Email</td>
+
+                    }*@
+
+
+                @{
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <td>
+                            <a asp-controller="Company" asp-action="Edit"
+                               asp-route-name="@company.UserName">
+                                Edit
+                            </a> |
+
+                            <a asp-controller="Company" asp-action="Delete"
+                               asp-route-name="@company.UserName"
+                               asp-route-email="@company.Email"
+                               onclick="return confirm('Are you sure you want to delete:  @company.UserName?')">
+                                Delete
+                            </a>
+                        </td>
+                    }
+                }
+
+
+            </tr>
+
+        }
+    </tbody>
+</table>
+
+
+
